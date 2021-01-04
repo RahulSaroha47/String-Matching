@@ -1,0 +1,145 @@
+import os
+import glob
+import pandas as pd
+import numpy as np
+import sys
+import math
+from sklearn import preprocessing
+import matplotlib.pyplot as plt
+import re
+from sklearn.decomposition import PCA
+from scipy.spatial.distance import euclidean
+from fastdtw import fastdtw
+
+all_files=[]
+all_files=os.listdir()
+all_files
+
+all_user_files=[]
+for i in all_files:
+    if(i[-4:]==".txt"):
+        df=pd.read_table(i, header=None,names=['x','y','Time','Button_status','Azimuthal','Altitude','Pressure'], delim_whitespace=True)
+        #rows=df.iloc[0]
+        s=df.iloc[1:,[0,1,2,4,5,6]].values
+        #s=preprocessing.scale(s)
+        #X_normalized = preprocessing.normalize(X, norm='l2')
+        all_user_files.append(s)
+        
+ all_feature_vector=[]
+for i in range(0,200):
+    rows=len(all_user_files[i])
+    feature_vector=[]
+    for j in range(0,rows-1):
+        feature_vector_file=[]
+        delx=all_user_files[i][j+1][0]-all_user_files[i][j][0]
+        dely=all_user_files[i][j+1][1]-all_user_files[i][j][1]
+        distance=math.sqrt((delx)**2 + (dely)**2)
+        #del_timestamp=all_user_files[i][j+1][2]-all_user_files[i][j][2]
+        #speed=distance/del_timestamp
+        #tan_angle=math.atan2(dely,delx)
+        #sine_angle=math.sin(dely/distance)
+        #cosine_angle=math.cos(delx/distance)
+        #cosine=delx/distance
+        #sine=dely/distance
+        del_pressure=all_user_files[i][j+1][5]-all_user_files[i][j][5]
+        
+        feature_vector_file.append(delx)
+        feature_vector_file.append(dely)
+        #feature_vector_file.append(speed)
+        #feature_vector_file.append(distance)
+        #feature_vector_file.append(sine)
+        #feature_vector_file.append(cosine)
+        #feature_vector_file.append(delx)
+        feature_vector_file.append(del_pressure)
+        
+        feature_vector.append(feature_vector_file)
+        np.array(feature_vector)
+   
+    all_feature_vector.append(feature_vector)
+    all_feature_vector[0]
+    
+    
+    feature_dtw1_1=np.zeros(shape=(40,40))
+feature_dtw2_2=np.zeros(shape=(40,40))
+feature_dtw3_3=np.zeros(shape=(40,40))
+feature_dtw4_4=np.zeros(shape=(40,40))
+feature_dtw5_5=np.zeros(shape=(40,40))
+
+for i in range(0,200):
+    
+    all_feature_vector[i]=np.array(all_feature_vector[i])
+    min_max_scaler = preprocessing.MinMaxScaler()
+    all_feature_vector[i] = min_max_scaler.fit_transform(all_feature_vector[i])
+    
+ for i in range(0,40):
+    for j in range(0,40):
+        
+        distance,path=fastdtw(all_feature_vector[i],all_feature_vector[j],dist=euclidean)
+        feature_dtw1_1[i][j]=distance
+        
+ f = open("mm_feature_dtw_1.csv","w")
+for i in range(0,40):
+    for j in range(0,40):
+        f.write(str(feature_dtw1_1[i][j]))
+        f.write(",")
+    f.write("\n")
+f.close()       
+    
+ for i in range(0,40):
+    for j in range(0,40):
+        
+        distance,path=fastdtw(all_feature_vector[i+40],all_feature_vector[j+40],dist=euclidean)
+        feature_dtw2_2[i][j]=distance  
+        
+  f = open("mm_feature_dtw_2.csv","w")
+for i in range(0,40):
+    for j in range(0,40):
+        f.write(str(feature_dtw2_2[i][j]))
+        f.write(",")
+    f.write("\n")
+f.close()  
+
+
+for i in range(0,40):
+    for j in range(0,40):
+        
+        distance,path=fastdtw(all_feature_vector[i+80],all_feature_vector[j+80],dist=euclidean)
+        feature_dtw3_3[i][j]=distance
+          
+          
+f = open("mm_feature_dtw_3.csv","w")
+for i in range(0,40):
+    for j in range(0,40):
+        f.write(str(feature_dtw3_3[i][j]))
+        f.write(",")
+    f.write("\n")
+f.close()
+
+for i in range(0,40):
+    for j in range(0,40):
+        
+        distance,path=fastdtw(all_feature_vector[i+120],all_feature_vector[j+120],dist=euclidean)
+        feature_dtw4_4[i][j]=distance
+        
+f = open("mm_feature_dtw_4.csv","w")
+for i in range(0,40):
+    for j in range(0,40):
+        f.write(str(feature_dtw4_4[i][j]))
+        f.write(",")
+    f.write("\n")
+f.close()
+
+for i in range(0,40):
+    for j in range(0,40):
+        
+        distance,path=fastdtw(all_feature_vector[i+160],all_feature_vector[j+160],dist=euclidean)
+        feature_dtw5_5[i][j]=distance
+        
+f = open("mm_feature_dtw_5.csv","w")
+for i in range(0,40):
+    for j in range(0,40):
+        f.write(str(feature_dtw5_5[i][j]))
+        f.write(",")
+    f.write("\n")
+f.close() 
+
